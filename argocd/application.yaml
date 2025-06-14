@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: budget-app
+  namespace: argocd          # ArgoCD is usually installed in 'argocd' namespace
+spec:
+  project: default
+
+  source:
+    repoURL: 'git@github.com:vanuj447/budget-app-argocd-config.git'
+    targetRevision: main
+    path: argocd/manifests         # relative path in the repo where your k8s manifests are
+
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: budget-app   # namespace where your app will be deployed
+
+  syncPolicy:
+    automated:
+      prune: true          # deletes resources removed from Git repo automatically
+      selfHeal: true       # auto-fix out-of-sync resources
+    syncOptions:
+      - CreateNamespace=true  # auto-create the namespace if not present

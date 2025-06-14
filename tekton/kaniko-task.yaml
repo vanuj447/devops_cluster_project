@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: kaniko-build
+  namespace: default
+spec:
+  workspaces:
+    - name: source
+      description: The Git clone workspace (your source code)
+  params:
+    - name: IMAGE
+      type: string
+      description: Full image name (e.g. docker.io/vanuj447/budget-app:latest)
+    - name: CONTEXT
+      type: string
+      description: Build context inside workspace (e.g. $(workspaces.source.path))
+  steps:
+    - name: debug
+      image: busybox
+      script: |
+        echo "---- DEBUG: Listing files in workspace ----"
+        ls -al $(workspaces.source.path)
+
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - --dockerfile=/workspace/dockerfile/Dockerfile
+        - --context=$(params.CONTEXT)
+        - --destination=$(params.IMAGE)
+        - --insecure
+        - --skip-tls-verify
+      volumeMounts:
+        - name: dockerfile-vol
+          mountPath: /workspace/dockerfile
+        # ✅ Mount the secret file directly as config.json (Kaniko default)
+        - name: docker-config
+          mountPath: /kaniko/.docker/config.json
+          subPath: .dockerconfigjson
+  volumes:
+    - name: dockerfile-vol
+      configMap:
+        name: rails-dockerfile
+    - name: docker-config
+      secret:
+        secretName: docker-credentials

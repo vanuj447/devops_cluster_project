@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: budget-app-pipeline
+  namespace: default
+spec:
+  params:
+    - name: git-url
+    - name: image-url
+  workspaces:
+    - name: source                      # ✅ Match workspace used by tasks
+  tasks:
+    - name: fetch-source
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+      workspaces:
+        - name: output
+          workspace: source
+
+    - name: build-and-push
+      taskRef:
+        name: kaniko-build
+      runAfter:
+        - fetch-source
+      params:
+        - name: IMAGE
+          value: $(params.image-url)
+        - name: CONTEXT
+          value: $(workspaces.source.path)
+      workspaces:
+        - name: source                  # ✅ Must match what's declared above
+          workspace: source
+
