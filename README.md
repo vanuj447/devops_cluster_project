@@ -1,4 +1,4 @@
-# DevOps Coding Assessment: Ruby on Rails Budget App Deployment
+# DevOps Tools Implementations POC
 
 This repository contains the end-to-end implementation of a DevOps project deploying a containerized Ruby on Rails application with PostgreSQL using Docker, Kubernetes, ArgoCD (GitOps), and Tekton (CI/CD).
 
